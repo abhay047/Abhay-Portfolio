@@ -3,42 +3,22 @@ import { Link, useLocation } from 'react-router';
 
 const Navbar = () => {
   const location = useLocation();
-
-  // Initialize theme from localStorage or system preference directly
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      return savedTheme === 'dark';
-    }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  // Sync dark class with document root and localStorage
+  // Ensure dark mode class is cleared from document root
   useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
+    document.documentElement.classList.remove('dark');
+    localStorage.removeItem('theme');
+  }, []);
 
   // Active item tracking
-  const [selectedItem, setSelectedItem] = useState(null);
   const currentPath = location.pathname;
   const activeItem = selectedItem || (
     currentPath === '/contact-me'
       ? 'Contact Me'
       : 'Home'
   );
-
-  const toggleTheme = () => {
-    setIsDark((prev) => !prev);
-  };
 
   const navLinks = [
     { name: 'Home', href: '#', isRoute: false },
@@ -56,18 +36,18 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full px-4 sm:px-6 lg:px-8 pt-4 pb-2">
       <nav
-        className="mx-auto max-w-6xl rounded-full px-5 sm:px-8 py-3 flex items-center justify-between transition-all duration-300 bg-[#DDE6ED] dark:bg-[#252A34] shadow-lg shadow-black/5 dark:shadow-2xl dark:shadow-black/30 border border-slate-300/70 dark:border-slate-700/70 backdrop-blur-md"
+        className="mx-auto max-w-6xl rounded-full px-5 sm:px-8 py-3 flex items-center justify-between bg-[#DDE6ED] shadow-lg shadow-black/5 border border-slate-300/80 backdrop-blur-md"
         aria-label="Main Navigation"
       >
         {/* Brand / Logo */}
         <Link
           to="/"
           onClick={() => setSelectedItem('Home')}
-          className="flex items-center text-lg sm:text-xl font-bold tracking-tight text-[#252A34] dark:text-white select-none transition-colors"
+          className="flex items-center text-lg sm:text-xl font-bold tracking-tight text-[#252A34] select-none hover:opacity-90 transition-opacity"
         >
           <span>Abhay</span>
-          <span className="mx-1.5 font-normal text-slate-400 dark:text-slate-500">|</span>
-          <span className="font-medium text-slate-700 dark:text-slate-200">Portfolio</span>
+          <span className="mx-1.5 font-normal text-slate-400">|</span>
+          <span className="font-medium text-slate-700">Portfolio</span>
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -80,8 +60,8 @@ const Navbar = () => {
                 <span
                   className={`text-sm font-medium transition-colors duration-200 ${
                     isActive
-                      ? 'text-[#252A34] dark:text-white font-semibold'
-                      : 'text-slate-600 hover:text-[#252A34] dark:text-slate-300 dark:hover:text-white'
+                      ? 'text-[#252A34] font-semibold'
+                      : 'text-slate-600 hover:text-[#252A34]'
                   }`}
                 >
                   {link.name}
@@ -89,7 +69,7 @@ const Navbar = () => {
 
                 {/* Active Indicator (Underline only) */}
                 {isActive && (
-                  <span className="absolute -bottom-1 w-6 h-0.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.9)]"></span>
+                  <span className="absolute -bottom-1 w-6 h-0.5 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
                 )}
               </div>
             );
@@ -116,58 +96,11 @@ const Navbar = () => {
           })}
         </div>
 
-        {/* Right Action Section: Theme Toggle & Resume Button */}
-        <div className="hidden md:flex items-center gap-3.5">
-          {/* Theme Toggle Button */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-300/80 dark:border-slate-600/90 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer focus:outline-none"
-          >
-            {isDark ? (
-              // Moon Icon
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-4 h-4 text-amber-300"
-              >
-                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-              </svg>
-            ) : (
-              // Sun Icon with Ray Dots
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-4 h-4 text-slate-700"
-              >
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2v2" />
-                <path d="M12 20v2" />
-                <path d="m4.93 4.93 1.41 1.41" />
-                <path d="m17.66 17.66 1.41 1.41" />
-                <path d="M2 12h2" />
-                <path d="M20 12h2" />
-                <path d="m6.34 17.66-1.41 1.41" />
-                <path d="m19.07 4.93-1.41 1.41" />
-              </svg>
-            )}
-          </button>
-
-          {/* Resume Button */}
+        {/* Right Action Section: Resume Button */}
+        <div className="hidden md:flex items-center">
           <a
             href="#resume"
-            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.03] active:scale-95 bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
+            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-md hover:scale-[1.03] active:scale-95 bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
           >
             <span>Resume</span>
             <svg
@@ -185,58 +118,13 @@ const Navbar = () => {
           </a>
         </div>
 
-        {/* Mobile Action & Hamburger Button */}
-        <div className="flex md:hidden items-center gap-2">
-          {/* Mobile Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-300/80 dark:border-slate-600/90 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer"
-          >
-            {isDark ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-4 h-4 text-amber-300"
-              >
-                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-4 h-4 text-slate-700"
-              >
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2v2" />
-                <path d="M12 20v2" />
-                <path d="m4.93 4.93 1.41 1.41" />
-                <path d="m17.66 17.66 1.41 1.41" />
-                <path d="M2 12h2" />
-                <path d="M20 12h2" />
-                <path d="m6.34 17.66-1.41 1.41" />
-                <path d="m19.07 4.93-1.41 1.41" />
-              </svg>
-            )}
-          </button>
-
-          {/* Hamburger Menu Toggle Button */}
+        {/* Mobile Hamburger Button */}
+        <div className="flex md:hidden items-center">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle navigation menu"
-            className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-300/80 dark:border-slate-600/90 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-300/80 text-slate-700 hover:bg-black/5 transition-all cursor-pointer"
           >
             {mobileMenuOpen ? (
               <svg
@@ -274,14 +162,14 @@ const Navbar = () => {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-2 mx-auto max-w-6xl rounded-2xl p-4 bg-[#DDE6ED] dark:bg-[#252A34] border border-slate-300/70 dark:border-slate-700/70 shadow-xl transition-all">
+        <div className="md:hidden mt-2 mx-auto max-w-6xl rounded-2xl p-4 bg-[#DDE6ED] border border-slate-300/80 shadow-xl transition-all">
           <div className="flex flex-col gap-3">
             {navLinks.map((link) => {
               const isActive = activeItem === link.name;
               const linkClasses = `px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-black/5 dark:bg-white/10 text-[#252A34] dark:text-white font-semibold'
-                  : 'text-slate-600 hover:text-[#252A34] dark:text-slate-300 dark:hover:text-white'
+                  ? 'bg-black/5 text-[#252A34] font-semibold'
+                  : 'text-slate-600 hover:text-[#252A34]'
               }`;
 
               return link.isRoute ? (
@@ -306,11 +194,11 @@ const Navbar = () => {
             })}
 
             {/* Mobile Resume Button */}
-            <div className="pt-2 border-t border-slate-300/40 dark:border-slate-700/40">
+            <div className="pt-2 border-t border-slate-300/40">
               <a
                 href="#resume"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-sm bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-xs bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
               >
                 <span>Resume</span>
                 <svg

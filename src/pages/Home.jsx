@@ -1,10 +1,14 @@
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#1A1D24] transition-colors duration-300">
-      <Navbar />
-      {/* Home Page Content */}
+    <div className="min-h-screen flex flex-col justify-between bg-[#F5F7FA]">
+      <div>
+        <Navbar />
+        {/* Home Page Content */}
+      </div>
+      <Footer />
     </div>
   );
 };
