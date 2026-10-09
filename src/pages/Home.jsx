@@ -1,9 +1,12 @@
-import React from 'react'
+import Navbar from '../components/Navbar';
 
 const Home = () => {
   return (
-    <div>Home</div>
-  )
-}
+    <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#1A1D24] transition-colors duration-300">
+      <Navbar />
+      {/* Home Page Content */}
+    </div>
+  );
+};
 
-export default Home
+export default Home;
