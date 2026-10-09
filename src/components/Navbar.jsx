@@ -5,11 +5,22 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Ensure dark mode class is cleared from document root
+  // Clear any dark mode classes
   useEffect(() => {
     document.documentElement.classList.remove('dark');
     localStorage.removeItem('theme');
+  }, []);
+
+  // Listen for window scroll to trigger smooth full width expansion
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 25);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Active item tracking
@@ -34,135 +45,147 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full px-4 sm:px-6 lg:px-8 pt-4 pb-2">
+    <header className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
       <nav
-        className="mx-auto max-w-6xl rounded-full px-5 sm:px-8 py-3 flex items-center justify-between bg-[#DDE6ED] shadow-lg shadow-black/5 border border-slate-300/80 backdrop-blur-md"
+        className={`pointer-events-auto bg-[#DDE6ED]/40 backdrop-blur-2xl backdrop-saturate-180 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width,margin,border-radius,box-shadow] ${
+          isScrolled
+            ? 'w-full max-w-full mt-0 rounded-none border-b border-white/70 border-t-0 border-l-0 border-r-0 px-6 sm:px-10 lg:px-12 py-3.5 shadow-[0_4px_20px_0_rgba(0,0,0,0.04)]'
+            : 'w-[92%] max-w-6xl mt-4 rounded-full border border-white/60 px-5 sm:px-8 py-3 shadow-[0_10px_35px_0_rgba(0,0,0,0.06),inset_0_1px_1px_0_rgba(255,255,255,0.7)]'
+        }`}
         aria-label="Main Navigation"
       >
-        {/* Brand / Logo */}
-        <Link
-          to="/"
-          onClick={() => setSelectedItem('Home')}
-          className="flex items-center text-lg sm:text-xl font-bold tracking-tight text-[#252A34] select-none hover:opacity-90 transition-opacity"
-        >
-          <span>Abhay</span>
-          <span className="mx-1.5 font-normal text-slate-400">|</span>
-          <span className="font-medium text-slate-700">Portfolio</span>
-        </Link>
+        <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
+          {/* Brand / Logo */}
+          <Link
+            to="/"
+            onClick={() => setSelectedItem('Home')}
+            className="flex items-center text-lg sm:text-xl font-bold tracking-tight text-[#252A34] select-none hover:opacity-90 transition-opacity"
+          >
+            <span>Abhay</span>
+            <span className="mx-1.5 font-normal text-slate-400">|</span>
+            <span className="font-medium text-slate-700">Portfolio</span>
+          </Link>
 
-        {/* Desktop Navigation Links */}
-        <div className="hidden md:flex items-center gap-7 lg:gap-9">
-          {navLinks.map((link) => {
-            const isActive = activeItem === link.name;
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-7 lg:gap-9">
+            {navLinks.map((link) => {
+              const isActive = activeItem === link.name;
 
-            const linkContent = (
-              <div className="relative flex flex-col items-center py-1">
-                <span
-                  className={`text-sm font-medium transition-colors duration-200 ${
-                    isActive
-                      ? 'text-[#252A34] font-semibold'
-                      : 'text-slate-600 hover:text-[#252A34]'
-                  }`}
+              const linkContent = (
+                <div className="relative flex flex-col items-center py-1">
+                  <span
+                    className={`text-sm font-medium transition-colors duration-200 ${
+                      isActive
+                        ? 'text-[#252A34] font-semibold'
+                        : 'text-slate-600 hover:text-[#252A34]'
+                    }`}
+                  >
+                    {link.name}
+                  </span>
+
+                  {/* Active Indicator (Underline only) */}
+                  {isActive && (
+                    <span className="absolute -bottom-1 w-6 h-0.5 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+                  )}
+                </div>
+              );
+
+              return link.isRoute ? (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  onClick={() => handleNavClick(link)}
+                  className="outline-none"
                 >
-                  {link.name}
-                </span>
+                  {linkContent}
+                </Link>
+              ) : (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => handleNavClick(link)}
+                  className="outline-none"
+                >
+                  {linkContent}
+                </a>
+              );
+            })}
+          </div>
 
-                {/* Active Indicator (Underline only) */}
-                {isActive && (
-                  <span className="absolute -bottom-1 w-6 h-0.5 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
-                )}
-              </div>
-            );
-
-            return link.isRoute ? (
-              <Link
-                key={link.name}
-                to={link.href}
-                onClick={() => handleNavClick(link)}
-                className="outline-none"
-              >
-                {linkContent}
-              </Link>
-            ) : (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={() => handleNavClick(link)}
-                className="outline-none"
-              >
-                {linkContent}
-              </a>
-            );
-          })}
-        </div>
-
-        {/* Right Action Section: Resume Button */}
-        <div className="hidden md:flex items-center">
-          <a
-            href="#resume"
-            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-md hover:scale-[1.03] active:scale-95 bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
-          >
-            <span>Resume</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="w-4 h-4"
+          {/* Right Action Section: Resume Button */}
+          <div className="hidden md:flex items-center">
+            <a
+              href="#resume"
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-md hover:scale-[1.03] active:scale-95 bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
             >
-              <path
-                fillRule="evenodd"
-                d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </a>
-        </div>
+              <span>Resume</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </a>
+          </div>
 
-        {/* Mobile Hamburger Button */}
-        <div className="flex md:hidden items-center">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-            className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-300/80 text-slate-700 hover:bg-black/5 transition-all cursor-pointer"
-          >
-            {mobileMenuOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-5 h-5"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-5 h-5"
-              >
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="4" y1="18" x2="20" y2="18" />
-              </svg>
-            )}
-          </button>
+          {/* Mobile Hamburger Button */}
+          <div className="flex md:hidden items-center">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-300/80 text-slate-700 hover:bg-black/5 transition-all cursor-pointer"
+            >
+              {mobileMenuOpen ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5"
+                >
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="6" x2="20" y2="6" />
+                  <line x1="4" y1="18" x2="20" y2="18" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-2 mx-auto max-w-6xl rounded-2xl p-4 bg-[#DDE6ED] border border-slate-300/80 shadow-xl transition-all">
+        <div
+          className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isScrolled
+              ? 'w-full rounded-b-2xl border-b border-white/70 p-4 bg-[#DDE6ED]/65 backdrop-blur-2xl shadow-xl'
+              : 'w-[92%] max-w-6xl mt-2 rounded-2xl p-4 bg-[#DDE6ED]/60 backdrop-blur-2xl border border-white/60 shadow-xl'
+          }`}
+        >
           <div className="flex flex-col gap-3">
             {navLinks.map((link) => {
               const isActive = activeItem === link.name;
