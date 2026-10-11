@@ -4,8 +4,8 @@ import { Link, useLocation } from 'react-router';
 const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('Home');
 
   // Clear any dark mode classes
   useEffect(() => {
@@ -23,25 +23,95 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Dynamic ScrollSpy: Update active underline as user scrolls through sections
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      return;
+    }
+
+    const handleScrollSpy = () => {
+      // If at the very top of the page, highlight Home
+      if (window.scrollY < 120) {
+        setActiveSection('Home');
+        return;
+      }
+
+      // Check sections from bottom to top for accurate viewport detection
+      const sections = [
+        { id: 'contact-me', name: 'Contact Me' },
+        { id: 'projects', name: 'Projects' },
+        { id: 'skills', name: 'Skills' },
+        { id: 'about', name: 'About' },
+      ];
+
+      const scrollPosition = window.scrollY + 200;
+
+      for (const section of sections) {
+        const el = document.getElementById(section.id);
+        if (el) {
+          const top = el.offsetTop;
+          if (scrollPosition >= top) {
+            setActiveSection(section.name);
+            return;
+          }
+        }
+      }
+
+      setActiveSection('Home');
+    };
+
+    window.addEventListener('scroll', handleScrollSpy, { passive: true });
+    handleScrollSpy(); // Initial check
+
+    return () => window.removeEventListener('scroll', handleScrollSpy);
+  }, [location.pathname]);
+
   // Active item tracking
-  const currentPath = location.pathname;
-  const activeItem = selectedItem || (
-    currentPath === '/contact-me'
-      ? 'Contact Me'
-      : 'Home'
-  );
+  const activeItem = activeSection;
 
   const navLinks = [
     { name: 'Home', href: '#', isRoute: false },
     { name: 'About', href: '#about', isRoute: false },
     { name: 'Skills', href: '#skills', isRoute: false },
     { name: 'Projects', href: '#projects', isRoute: false },
-    { name: 'Contact Me', href: '/contact-me', isRoute: true },
+    { name: 'Contact Me', href: '#contact-me', isRoute: false },
   ];
 
-  const handleNavClick = (link) => {
-    setSelectedItem(link.name);
+  // Smooth scroll handler for anchor links with navbar offset
+  const handleNavClick = (e, link) => {
     setMobileMenuOpen(false);
+
+    if (link.isRoute) {
+      setActiveSection(link.name);
+      return;
+    }
+
+    if (location.pathname === '/') {
+      e.preventDefault();
+      setActiveSection(link.name);
+
+      if (link.name === 'Home') {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+        return;
+      }
+
+      const targetId = link.href.replace('#', '');
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        const navbarOffset = 75; // Offset so section title is not hidden behind navbar
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navbarOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        });
+      }
+    }
   };
 
   return (
@@ -58,7 +128,13 @@ const Navbar = () => {
           {/* Brand / Logo */}
           <Link
             to="/"
-            onClick={() => setSelectedItem('Home')}
+            onClick={(e) => {
+              if (location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setActiveSection('Home');
+              }
+            }}
             className="flex items-center text-lg sm:text-xl font-bold tracking-tight text-[#252A34] select-none hover:opacity-90 transition-opacity"
           >
             <span>Abhay</span>
@@ -67,7 +143,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-7 lg:gap-9">
+          <div className="hidden lg:flex items-center gap-7 lg:gap-9">
             {navLinks.map((link) => {
               const isActive = activeItem === link.name;
 
@@ -83,9 +159,9 @@ const Navbar = () => {
                     {link.name}
                   </span>
 
-                  {/* Active Indicator (Underline only) */}
+                  {/* Active Indicator (Clean Theme Underline) */}
                   {isActive && (
-                    <span className="absolute -bottom-1 w-6 h-0.5 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+                    <span className="absolute -bottom-1 w-6 h-[2.5px] rounded-full bg-[#252A34] shadow-xs transition-all duration-300"></span>
                   )}
                 </div>
               );
@@ -94,7 +170,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.href}
-                  onClick={() => handleNavClick(link)}
+                  onClick={(e) => handleNavClick(e, link)}
                   className="outline-none"
                 >
                   {linkContent}
@@ -103,8 +179,8 @@ const Navbar = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => handleNavClick(link)}
-                  className="outline-none"
+                  onClick={(e) => handleNavClick(e, link)}
+                  className="outline-none cursor-pointer"
                 >
                   {linkContent}
                 </a>
@@ -113,7 +189,7 @@ const Navbar = () => {
           </div>
 
           {/* Right Action Section: Resume Button */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden lg:flex items-center">
             <a
               href="#resume"
               className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-md hover:scale-[1.03] active:scale-95 bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
@@ -134,8 +210,8 @@ const Navbar = () => {
             </a>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile & Tablet Hamburger Button */}
+          <div className="flex lg:hidden items-center">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -189,17 +265,17 @@ const Navbar = () => {
           <div className="flex flex-col gap-3">
             {navLinks.map((link) => {
               const isActive = activeItem === link.name;
-              const linkClasses = `px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              const linkClasses = `px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 isActive
-                  ? 'bg-black/5 text-[#252A34] font-semibold'
-                  : 'text-slate-600 hover:text-[#252A34]'
+                  ? 'bg-[#FDFFBC] border border-[#FFD369] text-[#252A34] font-bold shadow-2xs'
+                  : 'text-slate-700 hover:bg-black/5 hover:text-[#252A34]'
               }`;
 
               return link.isRoute ? (
                 <Link
                   key={link.name}
                   to={link.href}
-                  onClick={() => handleNavClick(link)}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={linkClasses}
                 >
                   {link.name}
@@ -208,7 +284,7 @@ const Navbar = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => handleNavClick(link)}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={linkClasses}
                 >
                   {link.name}
