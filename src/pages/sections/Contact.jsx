@@ -15,14 +15,125 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'name': {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return 'Your name is required';
+        }
+        if (trimmed.length < 2) {
+          return 'Name must be at least 2 characters';
+        }
+        if (!/^[a-zA-Z\s.'-]+$/.test(trimmed)) {
+          return 'Name can only contain alphabetic letters';
+        }
+        return '';
+      }
+
+      case 'phone': {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return 'Contact number is required';
+        }
+        const digits = trimmed.replace(/\D/g, '');
+        if (digits.length < 10) {
+          return 'Please enter a valid 10-digit mobile number';
+        }
+        if (digits.length > 15) {
+          return 'Phone number cannot exceed 15 digits';
+        }
+        return '';
+      }
+
+      case 'email': {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return 'Email address is required';
+        }
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(trimmed)) {
+          return 'Please enter a valid email address (e.g. name@example.com)';
+        }
+        return '';
+      }
+
+      case 'message': {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return 'Project details or message is required';
+        }
+        if (trimmed.length < 10) {
+          return 'Message must be at least 10 characters';
+        }
+        return '';
+      }
+
+      default:
+        return '';
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let finalValue = value;
+
+    // Strict input filter for phone: block alphabets and symbols
+    if (name === 'phone') {
+      finalValue = value.replace(/[^\d+ -]/g, '');
+      if (finalValue.includes('+')) {
+        finalValue = (finalValue.startsWith('+') ? '+' : '') + finalValue.replace(/\+/g, '');
+      }
+    }
+
+    // Name: prevent numbers and invalid symbols
+    if (name === 'name') {
+      finalValue = value.replace(/[^a-zA-Z\s.'-]/g, '');
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: finalValue }));
+
+    // Revalidate live if touched or has existing error
+    if (touched[name] || errors[name]) {
+      const error = validateField(name, finalValue);
+      setErrors((prev) => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate all fields on submit
+    const newErrors = {
+      name: validateField('name', formData.name),
+      phone: validateField('phone', formData.phone),
+      email: validateField('email', formData.email),
+      message: validateField('message', formData.message),
+    };
+
+    setErrors(newErrors);
+    setTouched({
+      name: true,
+      phone: true,
+      email: true,
+      message: true,
+    });
+
+    const hasError = Object.values(newErrors).some((err) => Boolean(err));
+    if (hasError) {
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage('');
     setSubmitted(false);
@@ -51,6 +162,8 @@ const Contact = () => {
           email: '',
           message: '',
         });
+        setErrors({});
+        setTouched({});
         setTimeout(() => {
           setSubmitted(false);
         }, 6000);
@@ -316,7 +429,7 @@ const Contact = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
                 {/* Name & Contact No Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Name */}
@@ -334,9 +447,16 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         placeholder="e.g. John Smith"
+                        maxLength={60}
+                        autoComplete="name"
                         required
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/80 border border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20 outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs"
+                        className={`w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/80 border outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs ${
+                          errors.name
+                            ? 'border-rose-400 focus:border-rose-500 focus:ring-3 focus:ring-rose-500/20'
+                            : 'border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20'
+                        }`}
                       />
                       <span className="absolute left-3.5 top-3 text-slate-400">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -345,6 +465,12 @@ const Contact = () => {
                         </svg>
                       </span>
                     </div>
+                    {errors.name && (
+                      <p className="text-[11px] text-rose-600 font-medium mt-1.5 flex items-center gap-1 animate-in fade-in duration-200">
+                        <span>⚠</span>
+                        <span>{errors.name}</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Contact Number */}
@@ -362,9 +488,17 @@ const Contact = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="e.g. +91 98765 43210"
+                        onBlur={handleBlur}
+                        placeholder="e.g. 9876543210 or +91 9876543210"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        maxLength={18}
                         required
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/80 border border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20 outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs"
+                        className={`w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/80 border outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs ${
+                          errors.phone
+                            ? 'border-rose-400 focus:border-rose-500 focus:ring-3 focus:ring-rose-500/20'
+                            : 'border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20'
+                        }`}
                       />
                       <span className="absolute left-3.5 top-3 text-slate-400">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -372,6 +506,12 @@ const Contact = () => {
                         </svg>
                       </span>
                     </div>
+                    {errors.phone && (
+                      <p className="text-[11px] text-rose-600 font-medium mt-1.5 flex items-center gap-1 animate-in fade-in duration-200">
+                        <span>⚠</span>
+                        <span>{errors.phone}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -390,9 +530,15 @@ const Contact = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       placeholder="e.g. john@example.com"
+                      autoComplete="email"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/80 border border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20 outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs"
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/80 border outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs ${
+                        errors.email
+                          ? 'border-rose-400 focus:border-rose-500 focus:ring-3 focus:ring-rose-500/20'
+                          : 'border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20'
+                      }`}
                     />
                     <span className="absolute left-3.5 top-3 text-slate-400">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -401,6 +547,12 @@ const Contact = () => {
                       </svg>
                     </span>
                   </div>
+                  {errors.email && (
+                    <p className="text-[11px] text-rose-600 font-medium mt-1.5 flex items-center gap-1 animate-in fade-in duration-200">
+                      <span>⚠</span>
+                      <span>{errors.email}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Message */}
@@ -417,10 +569,22 @@ const Contact = () => {
                     rows="4"
                     value={formData.message}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="Briefly describe your requirements, timeline, or whatever is on your mind..."
+                    maxLength={1000}
                     required
-                    className="w-full px-4 py-3 rounded-2xl bg-white/80 border border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20 outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs resize-none"
+                    className={`w-full px-4 py-3 rounded-2xl bg-white/80 border outline-none text-[#252A34] placeholder-slate-400 text-sm transition-all shadow-2xs resize-none ${
+                      errors.message
+                        ? 'border-rose-400 focus:border-rose-500 focus:ring-3 focus:ring-rose-500/20'
+                        : 'border-slate-200/90 focus:border-[#FFD369] focus:ring-3 focus:ring-[#FFD369]/20'
+                    }`}
                   ></textarea>
+                  {errors.message && (
+                    <p className="text-[11px] text-rose-600 font-medium mt-1.5 flex items-center gap-1 animate-in fade-in duration-200">
+                      <span>⚠</span>
+                      <span>{errors.message}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Action Bar */}
