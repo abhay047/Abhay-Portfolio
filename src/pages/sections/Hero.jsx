@@ -56,26 +56,9 @@ const Hero = () => {
 
   const socialLinks = [
     {
-      name: 'YouTube',
-      href: 'https://youtube.com',
-      icon: (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-        </svg>
-      ),
-    },
-    {
-      name: 'X (Twitter)',
-      href: 'https://x.com',
-      icon: (
-        <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-      ),
-    },
-    {
       name: 'LinkedIn',
       href: 'https://linkedin.com',
+      hoverClass: 'hover:text-[#0A66C2] hover:border-[#0A66C2] hover:bg-[#0A66C2]/10 hover:shadow-sm',
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
@@ -83,27 +66,9 @@ const Hero = () => {
       ),
     },
     {
-      name: 'Instagram',
-      href: 'https://instagram.com',
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          viewBox="0 0 24 24"
-        >
-          <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-        </svg>
-      ),
-    },
-    {
       name: 'GitHub',
       href: 'https://github.com',
+      hoverClass: 'hover:text-[#181717] hover:border-[#181717] hover:bg-black/10 hover:shadow-sm',
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path
@@ -111,6 +76,26 @@ const Hero = () => {
             clipRule="evenodd"
             d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
           />
+        </svg>
+      ),
+    },
+    {
+      name: 'WhatsApp',
+      href: 'https://wa.me/919259103492',
+      hoverClass: 'hover:text-[#25D366] hover:border-[#25D366] hover:bg-[#25D366]/10 hover:shadow-sm',
+      icon: (
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.44 19.65L5.27 16.61L5.07 16.29C4.24 14.97 3.81 13.46 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67ZM8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7.02 8.48 7.02 9.69C7.02 10.9 7.9 12.07 8.02 12.23C8.15 12.39 9.75 14.86 12.21 15.92C12.8 16.17 13.25 16.32 13.61 16.44C14.2 16.63 14.74 16.6 15.16 16.54C15.64 16.47 16.63 15.94 16.84 15.35C17.05 14.77 17.05 14.27 16.99 14.17C16.92 14.06 16.76 14 16.51 13.88C16.27 13.75 15.08 13.17 14.86 13.09C14.64 13 14.48 12.96 14.31 13.21C14.15 13.45 13.69 13.99 13.55 14.15C13.41 14.32 13.27 14.34 13.02 14.22C12.78 14.09 11.99 13.84 11.06 13.01C10.33 12.36 9.84 11.56 9.7 11.31C9.56 11.07 9.69 10.93 9.81 10.81C9.92 10.7 10.06 10.52 10.18 10.38C10.3 10.23 10.35 10.13 10.43 9.97C10.51 9.8 10.47 9.66 10.41 9.54C10.35 9.41 9.88 8.26 9.68 7.79C9.49 7.33 9.3 7.39 9.15 7.38C9.02 7.38 8.86 7.33 8.7 7.33H8.53Z" />
+        </svg>
+      ),
+    },
+    {
+      name: 'X (Twitter)',
+      href: 'https://x.com',
+      hoverClass: 'hover:text-black hover:border-black hover:bg-black/10 hover:shadow-sm',
+      icon: (
+        <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
       ),
     },
@@ -182,7 +167,7 @@ const Hero = () => {
             </div>
 
             {/* Social Icons Row */}
-            <div className="flex items-center gap-4 sm:gap-5 text-slate-600">
+            <div className="flex items-center gap-3 sm:gap-3.5">
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
@@ -191,7 +176,7 @@ const Hero = () => {
                   rel="noopener noreferrer"
                   aria-label={social.name}
                   title={social.name}
-                  className="p-2 rounded-xl text-slate-600 hover:text-[#252A34] hover:bg-black/5 hover:scale-115 active:scale-95 transition-all duration-200"
+                  className={`w-10.5 h-10.5 sm:w-11 sm:h-11 rounded-xl bg-white/70 backdrop-blur-xs border border-slate-300 text-slate-600 flex items-center justify-center shadow-2xs hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer ${social.hoverClass}`}
                 >
                   {social.icon}
                 </a>
