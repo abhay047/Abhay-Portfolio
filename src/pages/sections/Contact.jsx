@@ -1,5 +1,9 @@
 import { useState } from 'react';
 
+const GOOGLE_SCRIPT_URL =
+  import.meta.env.VITE_GOOGLE_SHEET_API_URL ||
+  'https://script.google.com/macros/s/AKfycbyv8Hbf1NUKx9tKmY61e72DRqChjUVQ8_Xe8xFDPfAFs_GuCspb2M-YR58baKD_uv080g/exec';
+
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -8,25 +12,59 @@ const Contact = () => {
     message: '',
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        name: '',
-        phone: '',
-        email: '',
-        message: '',
+    setIsSubmitting(true);
+    setErrorMessage('');
+    setSubmitted(false);
+
+    try {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          message: formData.message.trim(),
+        }),
       });
-    }, 4500);
+
+      const result = await response.json();
+
+      if (result && result.success) {
+        setSubmitted(true);
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          message: '',
+        });
+        setTimeout(() => {
+          setSubmitted(false);
+        }, 6000);
+      } else {
+        throw new Error(result?.message || 'Submission failed');
+      }
+    } catch (err) {
+      console.error('Contact form submission error:', err);
+      setErrorMessage(
+        'Unable to send message right now. Please try again or email directly at work.abhay1976@gmail.com'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const socialLinks = [
@@ -250,14 +288,29 @@ const Contact = () => {
 
               {/* Success Notification */}
               {submitted && (
-                <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm font-semibold flex items-center gap-3 shadow-xs">
+                <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm font-semibold flex items-center gap-3 shadow-xs animate-in fade-in duration-300">
                   <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0 font-bold">
                     ✓
                   </span>
                   <div>
                     <p className="font-bold">Message sent successfully!</p>
                     <p className="text-xs text-emerald-700 font-normal mt-0.5">
-                      Thanks for reaching out. I&apos;ll get back to your inquiry promptly.
+                      Your response has been saved directly to my sheet. I&apos;ll get back to you shortly!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Notification */}
+              {errorMessage && (
+                <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-300 text-rose-800 text-sm font-semibold flex items-center gap-3 shadow-xs animate-in fade-in duration-300">
+                  <span className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs shrink-0 font-bold">
+                    !
+                  </span>
+                  <div>
+                    <p className="font-bold">Failed to send message</p>
+                    <p className="text-xs text-rose-700 font-normal mt-0.5">
+                      {errorMessage}
                     </p>
                   </div>
                 </div>
@@ -374,21 +427,38 @@ const Contact = () => {
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <button
                     type="submit"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold shadow-xs hover:shadow-lg hover:scale-[1.03] active:scale-95 transition-all cursor-pointer bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]"
+                    disabled={isSubmitting}
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold shadow-xs transition-all ${
+                      isSubmitting
+                        ? 'opacity-70 cursor-not-allowed bg-slate-200 border border-slate-300 text-slate-500'
+                        : 'hover:shadow-lg hover:scale-[1.03] active:scale-95 cursor-pointer bg-[#FDFFBC] border border-[#FFD369] text-[#252A34]'
+                    }`}
                   >
-                    <span>Send Message</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    {isSubmitting ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin text-[#252A34]" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Sending Message...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Message</span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69l-7.22 7.22a.75.75 0 0 0 0 1.06Z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </>
+                    )}
                   </button>
 
                   <span className="text-[11px] text-slate-500 flex items-center gap-1.5">
